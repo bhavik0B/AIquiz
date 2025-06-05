@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Question, Quiz, QuizOptions } from '../types';
 
-const API_KEY = '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';
+const API_KEY = 'YOUR_API_KEY';
 
 export const fetchAIResponse = async (userInput: string) => {
   try {
