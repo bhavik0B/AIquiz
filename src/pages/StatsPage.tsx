@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Award, Brain, Clock, TrendingUp } from 'lucide-react';
 import { useQuizStore } from '../store/quizStore';
 import Card, { CardContent } from '../components/ui/Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 const StatsPage: React.FC = () => {
   const { quizHistory } = useQuizStore();
@@ -34,8 +34,7 @@ const StatsPage: React.FC = () => {
     // Count quizzes by difficulty
     const quizzesByDifficulty = quizHistory.reduce(
       (acc, quiz) => {
-        const difficulty = quiz.quizId.includes('easy') ? 'easy' : 
-                         quiz.quizId.includes('hard') ? 'hard' : 'medium';
+        const difficulty = quiz.difficulty || 'medium';
         acc[difficulty] = (acc[difficulty] || 0) + 1;
         return acc;
       },
@@ -157,14 +156,33 @@ const StatsPage: React.FC = () => {
                   Score Distribution
                 </h3>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={stats.scoreDistribution}>
-                      <XAxis dataKey="range" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#4F46E5" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {stats.totalQuizzes > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={stats.scoreDistribution}>
+                        <XAxis 
+                          dataKey="range" 
+                          tick={{ fill: 'currentColor' }}
+                          className="text-gray-600 dark:text-gray-400"
+                        />
+                        <YAxis 
+                          tick={{ fill: 'currentColor' }}
+                          className="text-gray-600 dark:text-gray-400"
+                        />
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '0.375rem'
+                          }}
+                        />
+                        <Bar dataKey="count" fill="#4F46E5" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+                      No data available
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -175,24 +193,42 @@ const StatsPage: React.FC = () => {
                   Quizzes by Difficulty
                 </h3>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={difficultyChartData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {difficultyChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {stats.totalQuizzes > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={difficultyChartData.filter(d => d.value > 0)}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ percent }) => percent > 0 ? `${(percent * 100).toFixed(0)}%` : ''}
+                          outerRadius={70}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {difficultyChartData.map((_entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '0.375rem'
+                          }}
+                        />
+                        <Legend 
+                          verticalAlign="bottom" 
+                          height={36}
+                          iconType="circle"
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500">
+                      No data available
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

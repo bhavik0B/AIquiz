@@ -39,12 +39,16 @@ const topicSuggestions = [
   'Food and Cooking',
 ];
 
-const QuizGenerator: React.FC = () => {
+interface QuizGeneratorProps {
+  suggestedTopic?: string;
+}
+
+const QuizGenerator: React.FC<QuizGeneratorProps> = ({ suggestedTopic = '' }) => {
   const navigate = useNavigate();
   const { createQuiz, isLoading, error } = useQuizStore();
   
   const [quizOptions, setQuizOptions] = useState<QuizOptions>({
-    topic: '',
+    topic: suggestedTopic,
     difficulty: 'medium',
     questionCount: 5,
     questionType: 'multiple',

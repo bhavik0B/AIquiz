@@ -4,6 +4,7 @@ import { Brain, ArrowLeft, BarChart } from 'lucide-react';
 import { QuizResult } from '../types';
 import Button from '../components/ui/Button';
 import Card, { CardContent } from '../components/ui/Card';
+import DifficultyBadge from '../components/ui/DifficultyBadge';
 import QuizQuestion from '../components/quiz/QuizQuestion';
 
 const ResultsPage: React.FC = () => {
@@ -42,6 +43,15 @@ const ResultsPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Quiz Results
         </h1>
+        
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            {result.quizTitle || `Quiz on ${result.topic}`}
+          </p>
+          {result.difficulty && (
+            <DifficultyBadge difficulty={result.difficulty} />
+          )}
+        </div>
         
         <div className="flex justify-center items-center mb-4">
           <div className={`text-4xl font-bold ${getScoreColor(result.score)}`}>

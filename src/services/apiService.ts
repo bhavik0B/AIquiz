@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { Question, Quiz, QuizOptions } from '../types';
+import { Quiz, QuizOptions } from '../types';
 
-const API_KEY = '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';
+const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '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';
 
 export const fetchAIResponse = async (userInput: string) => {
   try {
@@ -23,11 +23,23 @@ export const fetchAIResponse = async (userInput: string) => {
     return response.data.choices[0].message.content;
   } catch (error: any) {
     console.error('❌ API Error:', error.response?.data || error.message);
-    return '❌ Failed to fetch response from AI. Please check your API key or try again later.';
+    
+    // Handle specific error cases
+    if (error.response?.status === 401) {
+      throw new Error('Invalid or expired API key. Please update your OpenRouter API key.');
+    } else if (error.response?.status === 429) {
+      throw new Error('Rate limit exceeded. Please try again later.');
+    } else if (error.response?.status >= 500) {
+      throw new Error('OpenRouter service is currently unavailable. Please try again later.');
+    } else if (error.response?.data?.error?.message) {
+      throw new Error(error.response.data.error.message);
+    } else {
+      throw new Error('Failed to connect to AI service. Please check your internet connection.');
+    }
   }
 };
 
-export const generateQuiz = async (options: QuizOptions): Promise<Quiz | null> => {
+export const generateQuiz = async (options: QuizOptions): Promise<Quiz> => {
   const { topic, difficulty, questionCount, questionType } = options;
   
   const prompt = `Generate a quiz about "${topic}" with ${questionCount} ${questionType} questions at ${difficulty} difficulty level. 
@@ -58,6 +70,12 @@ export const generateQuiz = async (options: QuizOptions): Promise<Quiz | null> =
 
   try {
     const aiResponse = await fetchAIResponse(prompt);
+    
+    // Check if the response starts with an error message
+    if (aiResponse.startsWith('❌')) {
+      throw new Error(aiResponse);
+    }
+    
     let parsedResponse: Quiz;
     
     try {
@@ -67,23 +85,32 @@ export const generateQuiz = async (options: QuizOptions): Promise<Quiz | null> =
       // If it's not valid JSON, try to extract JSON from the text
       const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedResponse = JSON.parse(jsonMatch[0]);
+        try {
+          parsedResponse = JSON.parse(jsonMatch[0]);
+        } catch (innerError) {
+          throw new Error('AI returned invalid JSON format. Please try again.');
+        }
       } else {
-        throw new Error('Could not parse AI response as JSON');
+        throw new Error('AI did not return a valid quiz format. Please try again.');
       }
+    }
+    
+    // Validate that the response has required fields
+    if (!parsedResponse.questions || !Array.isArray(parsedResponse.questions) || parsedResponse.questions.length === 0) {
+      throw new Error('AI did not generate any questions. Please try again.');
     }
     
     // Add missing fields
     const quiz: Quiz = {
+      ...parsedResponse,
       id: generateId(),
-      createdAt: new Date().toISOString(),
-      ...parsedResponse
+      createdAt: new Date().toISOString()
     };
     
     return quiz;
   } catch (error: any) {
     console.error('Failed to generate quiz:', error);
-    return null;
+    throw error; // Propagate the error instead of returning null
   }
 };
 

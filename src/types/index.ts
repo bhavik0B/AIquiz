@@ -33,6 +33,9 @@ export interface Quiz {
 export interface QuizResult {
   id: string;
   quizId: string;
+  quizTitle: string;
+  topic: string;
+  difficulty: QuizDifficulty;
   score: number;
   totalQuestions: number;
   correctAnswers: number;

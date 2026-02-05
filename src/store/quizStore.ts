@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Quiz, QuizOptions, QuizResult, Question } from '../types';
+import { Quiz, QuizOptions, QuizResult } from '../types';
 import { generateQuiz } from '../services/apiService';
 
 interface QuizState {
@@ -37,19 +37,13 @@ export const useQuizStore = create<QuizState>()(
         set({ isLoading: true, error: null });
         try {
           const quiz = await generateQuiz(options);
-          if (quiz) {
-            set({ 
-              currentQuiz: quiz,
-              currentQuestion: 0,
-              answers: [],
-              isLoading: false
-            });
-          } else {
-            set({ 
-              error: 'Failed to generate quiz. Please try again.',
-              isLoading: false
-            });
-          }
+          set({ 
+            currentQuiz: quiz,
+            currentQuestion: 0,
+            answers: [],
+            isLoading: false,
+            error: null
+          });
         } catch (error: any) {
           set({ 
             error: error.message || 'An error occurred while creating the quiz',
@@ -118,6 +112,9 @@ export const useQuizStore = create<QuizState>()(
         const result: QuizResult = {
           id: Math.random().toString(36).substring(2, 11),
           quizId: currentQuiz.id,
+          quizTitle: currentQuiz.title,
+          topic: currentQuiz.topic,
+          difficulty: currentQuiz.difficulty,
           score,
           totalQuestions: currentQuiz.questions.length,
           correctAnswers,

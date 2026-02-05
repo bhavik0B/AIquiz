@@ -21,7 +21,7 @@ const HomePage: React.FC = () => {
   
   const calculateQuizzesByDifficulty = () => {
     return quizHistory.reduce((acc, quiz) => {
-      const difficulty = quiz.quizId.includes('easy') ? 'easy' : quiz.quizId.includes('hard') ? 'hard' : 'medium';
+      const difficulty = quiz.difficulty || 'medium';
       acc[difficulty] = (acc[difficulty] || 0) + 1;
       return acc;
     }, { easy: 0, medium: 0, hard: 0 } as Record<string, number>);
@@ -132,9 +132,9 @@ const HomePage: React.FC = () => {
               <Card key={quiz.id} className="hover:shadow-md transition-shadow duration-200">
                 <CardContent className="py-4">
                   <div className="flex justify-between items-center">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-medium text-gray-900 dark:text-white">
-                        Quiz on {quiz.quizId.split('-')[0]}
+                        {quiz.quizTitle || `Quiz on ${quiz.topic}`}
                       </h3>
                       <div className="flex items-center mt-1 text-sm text-gray-600 dark:text-gray-400">
                         <Clock size={14} className="mr-1" />

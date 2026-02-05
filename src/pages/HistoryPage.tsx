@@ -12,7 +12,8 @@ const HistoryPage: React.FC = () => {
   
   // Filter quizzes based on search term
   const filteredQuizzes = quizHistory.filter(quiz => 
-    quiz.quizId.toLowerCase().includes(searchTerm.toLowerCase())
+    (quiz.topic?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     quiz.quizTitle?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   // Group quizzes by date
@@ -108,18 +109,15 @@ const HistoryPage: React.FC = () => {
                       >
                         <CardContent className="py-4">
                           <div className="flex justify-between items-center">
-                            <div>
+                            <div className="flex-1">
                               <h3 className="font-medium text-gray-900 dark:text-white flex items-center">
-                                Quiz on {quiz.quizId.split('-')[0]}
+                                {quiz.quizTitle || `Quiz on ${quiz.topic}`}
                                 <ChevronRight className="h-4 w-4 ml-1 text-gray-400" />
                               </h3>
                               
                               <div className="flex items-center mt-1">
                                 <DifficultyBadge
-                                  difficulty={
-                                    quiz.quizId.includes('easy') ? 'easy' :
-                                    quiz.quizId.includes('hard') ? 'hard' : 'medium'
-                                  }
+                                  difficulty={quiz.difficulty || 'medium'}
                                   className="mr-2"
                                 />
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
