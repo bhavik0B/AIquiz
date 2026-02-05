@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { Quiz, QuizOptions } from '../types';
 
+<<<<<<< HEAD
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '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';
+=======
+const API_KEY = 'YOUR_API_KEY';
+>>>>>>> adbd4a0ac2b9a8de22f321603ec728cbd054353e
 
 export const fetchAIResponse = async (userInput: string) => {
   try {
